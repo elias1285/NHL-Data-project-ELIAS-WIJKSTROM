@@ -1,0 +1,12 @@
+name : NHL-Data-project
+channels:
+- conda-forge
+dependencies:
+- python=3.11
+- pandas
+- numpy
+- sikit-learn
+- matplotlib
+- seaborn
+- xgboost
+- jupyter
