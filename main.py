@@ -1,28 +1,27 @@
-from pathlib import Path
-from src.data_loader import load_seasons
+def print_top_features(model, feature_names, model_name, top_n=10):
+    """
+    Print top features for tree-based or linear models.
+    """
+    print("\n" + "-" * 50)
+    print(f"Top {top_n} features for {model_name}")
+    print("-" * 50)
 
-def main():
-    df = load_seasons()
+    if hasattr(model, "feature_importances_"):
+        importances = model.feature_importances_
 
-    df = df.rename(columns={"Round reached": "round_reached"})
-    
-    df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
+    elif hasattr(model, "coef_"):
+        importances = abs(model.coef_[0])
 
-    df = df.sort_values(by="season")
+    else:
+        print("This model does not provide feature importances.")
+        return
 
-    cols = ["season"] + [c for c in df.columns if c != "season"]
-    df = df[cols]
+    feature_importance = sorted(
+        zip(feature_names, importances),
+        key=lambda x: x[1],
+        reverse=True
+    )
 
-    cols = []
-    for c in df.columns:
-        if c not in ["made_playoffs", "round_reached"]:
-            cols.append(c)
-    cols.append("made_playoffs")
-    cols.append("round_reached")
-    df = df[cols]
+    for feat, val in feature_importance[:top_n]:
+        print(f"{feat}: {val:.4f}")
 
-    # we want to export the data to data/clean
-    Path("data/clean").mkdir(parents=True, exist_ok=True)
-    df.to_csv("data/clean/all_seasons_clean.csv", index=False)
-if __name__ == "__main__":
-    main()
