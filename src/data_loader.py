@@ -32,6 +32,7 @@ def load_seasons():
 
 def clean_data(df):
     df = df.rename(columns={"Round reached": "round_reached"})
+    df = df.rename(columns={"Team": "team"})
 
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
@@ -60,3 +61,8 @@ def load_clean_data(save_csv=True):
 
     return df
 
+
+
+
+
+    

@@ -1,14 +1,34 @@
-from sklearn.metrics import accuracy_score, classification_report
+import pandas as pd
+from sklearn.metrics import accuracy_score
 
-def evaluate_model(model, x_test, y_test, model_name):
-    y_pred = model.predict(x_test)
-    acc = accuracy_score(y_test, y_pred)
 
-    print("-" * 50)
-    print(f"Model: {model_name}")
-    print(f"Accuracy: {acc:.3f}")
-    print("Classification report:")
-    print(classification_report(y_test, y_pred))
+def evaluate_accuracy(model, X_test, y_test):
+    if model is None:
+        return None
 
-    return acc
+    y_pred = model.predict(X_test)
+    return accuracy_score(y_test, y_pred)
+
+
+def rank_models(models, X_test, y_test):
+
+    results = []
+
+    for name, model in models.items():
+        acc = evaluate_accuracy(model, X_test, y_test)
+
+        if acc is not None:
+            results.append({
+                "model": name,
+                "accuracy": acc
+            })
+
+    results_df = pd.DataFrame(results)
+
+    results_df = results_df.sort_values(
+        by="accuracy",
+        ascending=False
+    ).reset_index(drop=True)
+
+    return results_df
 
