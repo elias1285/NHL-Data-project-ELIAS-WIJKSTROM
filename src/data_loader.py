@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
+DATA_DIR = Path(__file__).resolve().parents[1] /"data" / "raw"
 
 
 def load_seasons():
@@ -22,28 +22,35 @@ def load_seasons():
             how="left"
         )
 
-        merged_df["Round reached"] = merged_df["Round reached"].fillna(0).astype(int)
+        merged_df["Round reached"] =merged_df["Round reached"].fillna(0).astype(int)
         merged_df["made_playoffs"] = (merged_df["Round reached"] > 0).astype(int)
 
         all_seasons.append(merged_df)
 
-    return pd.concat(all_seasons, ignore_index=True)
+    df = pd.concat(all_seasons, ignore_index=True)
+    return df
 
 
 def clean_data(df):
-    df = df.rename(columns={"Round reached": "round_reached"})
+    #rename columns
     df = df.rename(columns={"Team": "team"})
+    df = df.rename(columns={"Round reached": "round_reached"})
 
+    # remove "Unnamed" columns
     df = df.loc[:, ~df.columns.str.contains("^Unnamed")]
 
-    df = df.sort_values(by="season").reset_index(drop=True)
+    # sort data by season
+    df = df.sort_values("season").reset_index(drop=True)
 
-    standings_vars = ["W", "L", "OTL", "ROW", "Points", "Point %", "Point%"]
-    df = df.drop(columns=[c for c in standings_vars if c in df.columns], errors="ignore")
+    # drop variables we don't want to use
+    cols_to_drop = ["W", "L", "OTL", "ROW", "Points", "Point %", "Point%", "GF", "GA", "GF%"]
+    df = df.drop(columns=[c for c in cols_to_drop if c in df.columns], errors="ignore")
 
+    # put "seasons" in first place
     cols = ["season"] + [c for c in df.columns if c != "season"]
     df = df[cols]
 
+    # put "targets" at the end
     target_cols = ["made_playoffs", "round_reached"]
     other_cols = [c for c in df.columns if c not in target_cols]
     df = df[other_cols + target_cols]
@@ -62,6 +69,8 @@ def load_clean_data(save_csv=True):
     return df
 
 
+if __name__ == "__main__":
+    load_clean_data(save_csv=True)
 
 
 
