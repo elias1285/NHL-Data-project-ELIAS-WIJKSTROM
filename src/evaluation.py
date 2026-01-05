@@ -60,9 +60,7 @@ def evaluate_season(playoff_model, round_model, df_season, X_season):
     pred_df = assign_round_reached(df_ranked[["season", "team"]])
 
     true_rounds = y_rounds[top16][order]
-    r_acc = float(
-        (pred_df["pred_round_reached"].to_numpy() == true_rounds).mean()
-    )
+    r_acc = float((pred_df["pred_round_reached"].to_numpy() == true_rounds).mean())
 
     playoff_teams = (
         df_season.iloc[top16][["season", "team"]]
@@ -103,7 +101,45 @@ def evaluate_models(models, round_models, df, X, test_seasons):
     return playoff_acc, round_acc, pred_playoffs, pred_rounds
 
 
-# Collect round predictions
+# Collect playoff preds
+def collect_playoff_predictions(models, df, X, test_seasons):
+    collected = {}
+
+    for name in models:
+        y_true_all = []
+        y_pred_all = []
+
+        for season in test_seasons:
+            mask = df["season"] == season
+            df_season = df.loc[mask].reset_index(drop=True)
+            X_season = X.loc[mask].reset_index(drop=True)
+
+            y_true = df_season["made_playoffs"].to_numpy()
+
+            top16 = get_top_16(models[name], X_season)
+            y_pred = np.zeros_like(y_true)
+            y_pred[top16] = 1
+
+            y_true_all.extend(y_true)
+            y_pred_all.extend(y_pred)
+
+        collected[name] = (np.array(y_true_all), np.array(y_pred_all))
+
+    return collected
+
+
+# Confusion matrix playoffs
+def confusion_matrix_playoffs(y_true, y_pred):
+    labels = [0, 1]
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
+    return pd.DataFrame(
+        cm,
+        index=["made playoffs", "missed playoffs"],
+        columns=["predicted made playoff", "predicted missed playoffs"],
+    )
+
+
+# Collect round predictions (only real playoff teams)
 def collect_round_predictions(models, round_models, df, X, test_seasons):
     collected = {}
 
@@ -128,22 +164,26 @@ def collect_round_predictions(models, round_models, df, X, test_seasons):
             scores = rank_teams(round_models[name], X_16)
             order = np.argsort(scores)[::-1]
 
-            y_true_all.extend(y_rounds[top16][order])
-            y_pred_all.extend(pred_df["pred_round_reached"].to_numpy())
+            true_rounds = y_rounds[top16][order]
+            pred_rounds = pred_df["pred_round_reached"].to_numpy()
+
+            keep = true_rounds > 0  # only real playoff teams
+            y_true_all.extend(true_rounds[keep])
+            y_pred_all.extend(pred_rounds[keep])
 
         collected[name] = (np.array(y_true_all), np.array(y_pred_all))
 
     return collected
 
 
-# Confusion matrix
+# Confusion matrix rounds reached
 def confusion_matrix_round_reached(y_true, y_pred):
     labels = [1, 2, 3, 4, 5]
     cm = confusion_matrix(y_true, y_pred, labels=labels)
     return pd.DataFrame(
         cm,
-        index=[f"correct:{l}" for l in labels],
-        columns=[f"predicted:{l}" for l in labels],
+        index=[f"round reached{l}" for l in labels],
+        columns=[f"pred round reached{l}" for l in labels],
     )
 
 
@@ -152,7 +192,11 @@ def per_round_accuracy(y_true, y_pred):
     results = {}
     for r in [1, 2, 3, 4, 5]:
         idx = y_true == r
-        results[r] = float((y_pred[idx] == r).mean()) if idx.sum() > 0 else None
+        if idx.sum()>0:
+            acc = (y_pred[idx] == r).mean()
+            results[r] = round(float(acc),3)
+        else:
+            results[r]= None
     return results
 
 
@@ -160,7 +204,5 @@ def per_round_accuracy(y_true, y_pred):
 def format_table(df, decimals=3):
     out = df.copy()
     for c in out.columns:
-        out[c] = out[c].map(
-            lambda v: f"{v:.{decimals}f}" if pd.notna(v) else "NA"
-        )
+        out[c] = out[c].map(lambda v: f"{v:.{decimals}f}" if pd.notna(v) else "NA")
     return out
