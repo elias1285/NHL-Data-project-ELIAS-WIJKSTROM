@@ -101,7 +101,7 @@ def evaluate_models(models, round_models, df, X, test_seasons):
     return playoff_acc, round_acc, pred_playoffs, pred_rounds
 
 
-# Collect playoff preds
+# Collect playoff predictions
 def collect_playoff_predictions(models, df, X, test_seasons):
     collected = {}
 
@@ -139,7 +139,7 @@ def confusion_matrix_playoffs(y_true, y_pred):
     )
 
 
-# Collect round predictions (only real playoff teams)
+# Collect round predictions, only for teams that actually made the playoffs
 def collect_round_predictions(models, round_models, df, X, test_seasons):
     collected = {}
 
@@ -167,7 +167,7 @@ def collect_round_predictions(models, round_models, df, X, test_seasons):
             true_rounds = y_rounds[top16][order]
             pred_rounds = pred_df["pred_round_reached"].to_numpy()
 
-            keep = true_rounds > 0  # only real playoff teams
+            keep = true_rounds > 0  # only for real playoff teams!!
             y_true_all.extend(true_rounds[keep])
             y_pred_all.extend(pred_rounds[keep])
 

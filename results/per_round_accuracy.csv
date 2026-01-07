@@ -1,0 +1,4 @@
+model,round_1,round_2,round_3,round_4,round_5
+Random Forest,0.577,0.375,0.25,0.0,0.25
+Logistic Regression,0.542,0.438,0.125,0.0,0.25
+SVM,0.423,0.125,0.0,0.0,0.0

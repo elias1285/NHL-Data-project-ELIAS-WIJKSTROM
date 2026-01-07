@@ -57,7 +57,7 @@ def clean_data(df):
 
     return df
 
-
+# save clean data
 def load_clean_data(save_csv=True):
     df = load_seasons()
     df = clean_data(df)

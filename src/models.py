@@ -15,7 +15,7 @@ def train_random_forest(X_train, y_train, random_state=42):
 
 def train_logistic_regression(X_train, y_train, random_state=42):
     model = LogisticRegression(
-    max_iter=200,
+    max_iter=1000,
     random_state=random_state,
     class_weight="balanced"
     )
@@ -29,7 +29,9 @@ def train_svm(X_train, y_train, random_state=42):
     model = SVC(
         kernel="rbf",
         probability=True,
-        random_state=random_state
+        random_state=random_state,
+        cache_size= 2000,
+        max_iter= 20000
     )
     model.fit(X_train, y_train)
     return model
