@@ -41,14 +41,13 @@ python main.py
 
 Expected output: Accuracy of prediction models tables, confusion matrices
 
-## project structure
 
 ## Project Structure
 
 ```
 NHL-Data-project-ELIAS-WIJKSTROM/
 ├── main.py                 # Main entry point
-├── project_report.pdf      # Final report (submission)
+├── project_report.pdf      # Final report 
 ├── project_report.md       # Markdown report source
 ├── environment.yml         # Conda environment
 ├── README.md               # Project overview
