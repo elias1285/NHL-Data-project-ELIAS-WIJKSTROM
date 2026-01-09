@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 from src.data_loader import load_clean_data
 from src.models import train_models
@@ -19,6 +20,7 @@ def make_X(df):
     remove_cols = ["team", "season", "made_playoffs", "round_reached"]
     return df.drop(columns=[c for c in remove_cols if c in df.columns], errors="ignore")
 
+
 # get top 10 random forest features
 def random_forest_important_features(model, feature_names, top_n=10):
     return (
@@ -27,6 +29,7 @@ def random_forest_important_features(model, feature_names, top_n=10):
         .head(top_n)
     )
 
+
 # get top 10 coefficient (absolut value)
 def logistic_regression_coefficients(model, feature_names, top_n=10):
     return (
@@ -34,6 +37,7 @@ def logistic_regression_coefficients(model, feature_names, top_n=10):
         .sort_values(key=abs, ascending=False)
         .head(top_n)
     )
+
 
 # scale the data
 def scale_training_data(X_train, X_all):
@@ -56,7 +60,7 @@ def scale_training_data(X_train, X_all):
 
 
 def main():
-    
+
     df = load_clean_data(save_csv=False)
 
     # features and targets
@@ -204,7 +208,6 @@ def main():
     pd.DataFrame(per_round_rows).to_csv(results_dir / "per_round_accuracy.csv", index=False)
 
     # feature and coefficient importance
-
     rf_playoff_top10 = random_forest_important_features(
         playoff_models["Random Forest"],
         X_train_playoffs_scaled.columns,
@@ -220,8 +223,6 @@ def main():
     rf_playoff_top10.to_csv(results_dir / "random_forest_top10_features_playoffs.csv")
     rf_rounds_top10.to_csv(results_dir / "random_forest_top10_features_rounds.csv")
 
-     
-
     lr_playoff_top10 = logistic_regression_coefficients(
         playoff_models["Logistic Regression"],
         X_train_playoffs_scaled.columns,
@@ -236,6 +237,79 @@ def main():
 
     lr_playoff_top10.to_csv(results_dir / "logistic_regression_top10_coefficients_playoffs.csv")
     lr_rounds_top10.to_csv(results_dir / "logistic_regression_top10_coefficients_rounds.csv")
+
+    # Predicted vs True playoff heatmap
+    for model_name, (y_true, y_pred) in round_results.items():
+        cm_df = confusion_matrix_round_reached(y_true, y_pred)
+        cm = cm_df.to_numpy()
+        plt.figure(figsize=(7, 6))
+        plt.imshow(cm, origin="lower")
+        plt.colorbar()
+        plt.xticks(range(5), [1, 2, 3, 4, 5])
+        plt.yticks(range(5), [1, 2, 3, 4, 5])
+        plt.xlabel("Predicted round reached")
+        plt.ylabel("True round reached")
+        plt.title(f"Round Confusion Matrix Heatmap ({model_name})")
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                plt.text(j, i, str(cm[i, j]), ha="center", va="center")
+        safe_name = model_name.replace(" ", "_")
+        plt.savefig(results_dir / f"heatmap_rounds_{safe_name}.png", dpi=300, bbox_inches="tight")
+        plt.close()
+
+    # Plot 2: Logistic Regression coefficients
+    lr_playoff_coefs = pd.Series(
+        playoff_models["Logistic Regression"].coef_[0],
+        index=X_train_playoffs_scaled.columns,
+    ).sort_values()
+
+    lr_playoff_top10 = pd.concat([lr_playoff_coefs.head(5), lr_playoff_coefs.tail(5)])
+
+    plt.figure()
+    lr_playoff_top10.plot(kind="barh")
+    plt.xlabel("Coefficient value")
+    plt.title("Logistic Regression Coefficients (Playoff Qualification)")
+    plt.savefig(results_dir / "Logistic_regression_playoff_qualification_coefficient.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    lr_round_coefs = pd.Series(
+        round_models["Logistic Regression"].coef_[0],
+        index=X_train_rounds_scaled.columns,
+    ).sort_values()
+
+    lr_round_top10 = pd.concat([lr_round_coefs.head(5), lr_round_coefs.tail(5)])
+
+    plt.figure()
+    lr_round_top10.plot(kind="barh")
+    plt.xlabel("Coefficient value")
+    plt.title("Logistic Regression Coefficients (Playoff Rounds)")
+    plt.savefig(results_dir / "Logistic_Regression_playoff_round_reached_coefficients.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    # Plot 3: Random Forest feature importance
+    rf_playoff_importance = pd.Series(
+        playoff_models["Random Forest"].feature_importances_,
+        index=X_train_playoffs_scaled.columns,
+    ).sort_values(ascending=False).head(10)
+
+    plt.figure()
+    rf_playoff_importance.sort_values().plot(kind="barh")
+    plt.xlabel("Feature importance")
+    plt.title("Random Forest feature importance (Playoff Qualification)")
+    plt.savefig(results_dir / "Top_10_Random_Forest_feature_importance_playoff_qualification.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    rf_round_importance = pd.Series(
+        round_models["Random Forest"].feature_importances_,
+        index=X_train_rounds_scaled.columns,
+    ).sort_values(ascending=False).head(10)
+
+    plt.figure()
+    rf_round_importance.sort_values().plot(kind="barh")
+    plt.xlabel("Feature importance")
+    plt.title("Random Forest Feature Importance (Playoff Rounds)")
+    plt.savefig(results_dir / "Random_forest_feature_importance_playoff_round_reached.png", dpi=300, bbox_inches="tight")
+    plt.close()
 
 
 if __name__ == "__main__":
