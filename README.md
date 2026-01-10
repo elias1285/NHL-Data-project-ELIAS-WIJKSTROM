@@ -70,10 +70,9 @@ NHL-Data-project-ELIAS-WIJKSTROM/
 - python=3.11
 - pandas
 - numpy
-- sikit-learn
+- scikit-learn
 - matplotlib
 - seaborn
-- xgboost
 - jupyter
 
 
