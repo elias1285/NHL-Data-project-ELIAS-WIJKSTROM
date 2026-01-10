@@ -37,6 +37,7 @@ conda env create -f environment.yml
 conda activate NHL-Data-project
 
 ### usage
+run the script:
 python main.py
 
 Expected output: Accuracy of prediction models tables, confusion matrices
