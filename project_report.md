@@ -17,9 +17,8 @@ This project studies whether NHL regular-season performance metrics can be used 
 3. Methodology  
 4. Results  
 5. Discussion  
-6. Conclusion  
-7. References  
-8. Appendices  
+6. Conclusion    
+7. Appendices  
 
 \newpage
 
@@ -218,8 +217,10 @@ The objective of this project was to find out whether regular season performance
 For future work, the project could be improved by including more detailed playoff specific information with factors such as team matchups, injuries and recent form could help to get more accurate predictions. In addition, trying with different modeling approaches such as ordinal classification and other more advanced methods could render better results. Lastly, including more seasons for training the various models would help with the accuracy of the predictions.
 
 
-# 7. References
+# 7. Appendices
+## Appendix A
 
+Sources/References:
 1. Natural Stat Trick. NHL regular season and playoff team statistics and advanced metrics. Retrieved from https://www.naturalstattrick.com
 
 2. National Hockey League (NHL). Official website and playoff structure: https://www.nhl.com
@@ -234,9 +235,11 @@ For future work, the project could be improved by including more detailed playof
 
 7. Matplotlib Documentation. (2024). Matplotlib documentation. https://matplotlib.org
 
+8. GitHub. (2024). *GitHub Copilot documentation*. https://docs.github.com/en/copilot
 
-# 8. Appendices
-## Appendix A
+9. OpenAI. (2024). *ChatGPT documentation*. https://platform.openai.com/docs
+
+
 
 Feature Definitions:
 
